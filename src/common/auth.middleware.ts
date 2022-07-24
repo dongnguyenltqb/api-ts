@@ -1,11 +1,7 @@
-import { NextFunction } from 'express';
-import { FastifyReply, FastifyRequest } from 'fastify';
-
-export function Authentication(
-  req: FastifyRequest,
-  res: FastifyReply,
-  next: NextFunction,
-) {
-  console.log(`Request...${req.method} ${req.url}`);
+export function Authentication(req, res, next) {
+  console.log(`${new Date().toTimeString()} ${req.method} ${req.url}`);
+  req.user = {
+    user_id: 1,
+  };
   next();
 }

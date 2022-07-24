@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@fastify/multipart": "^7.1.0",
     "@fastify/static": "^6.4.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
@@ -27,6 +28,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/platform-fastify": "^9.0.5",
     "@nestjs/swagger": "^6.0.4",
+    "@types/fastify-multipart": "^0.7.0",
     "fastify": "^4.3.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

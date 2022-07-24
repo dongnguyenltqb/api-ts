@@ -3,18 +3,22 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import multipart from '@fastify/multipart';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  const fastify = new FastifyAdapter({
+    logger: {
+      level: 'info',
+    },
+  });
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({
-      logger: {
-        level: 'info',
-      },
-    }),
+    fastify,
   );
+
+  app.register(multipart);
 
   const config = new DocumentBuilder()
     .setTitle('Cats example')

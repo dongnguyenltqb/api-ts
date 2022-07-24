@@ -8,15 +8,21 @@ import {
   Delete,
   UseFilters,
   ParseIntPipe,
+  Req,
 } from '@nestjs/common';
+import * as fs from 'fs';
+import * as util from 'util';
+import { pipeline } from 'stream';
+const pump = util.promisify(pipeline);
 
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiConsumes, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ApiSingleBaseResponse, SingleBase } from 'src/common/api.dto';
-import { HttpExceptionFilter } from 'src/http-exception.filter';
+import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 
 import { CatsService } from './cats.service';
 import { CreateCatDto } from './dto/create-cat.dto';
 import { UpdateCatDto } from './dto/update-cat.dto';
+import { UploadSingleFile } from './dto/upload.dto';
 import { Cat } from './entities/cat.entity';
 
 @Controller('/cats')
@@ -52,8 +58,19 @@ export class CatsController {
     return this.catsService.remove(+id);
   }
 
+  @Post('/upload')
+  @ApiConsumes('multipart/form-data')
+  @ApiSingleBaseResponse(Cat)
+  async uploadFileAndPassValidation(@Req() req) {
+    const body = await req.file();
+    await pump(body.file, fs.createWriteStream(body.filename));
+    console.log({ body: body.fields.target.value });
+    return new SingleBase(new Cat());
+  }
+
   @ApiOkResponse({ type: Cat })
+  @Get('/entity/schema')
   entity() {
-    // do this to fix bug swagger did not import entity
+    return new Cat();
   }
 }

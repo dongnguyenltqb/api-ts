@@ -1,4 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { CatsService } from './cats.service';
 import { CatsController } from './cats.controller';
 import { DogsService } from 'src/dogs/dogs.service';
@@ -11,6 +16,8 @@ import { Authentication } from 'src/common/auth.middleware';
 })
 export class CatsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(Authentication).forRoutes(CatsController);
+    consumer
+      .apply(Authentication)
+      .forRoutes({ path: '/cats/:id', method: RequestMethod.ALL });
   }
 }
