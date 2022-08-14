@@ -5,5 +5,6 @@ export class UploadSingleFile {
   @ApiProperty({
     format: 'binary',
   })
-  file: string;
+  image: string;
+  age: number;
 }

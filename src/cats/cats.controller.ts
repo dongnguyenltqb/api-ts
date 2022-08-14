@@ -9,14 +9,22 @@ import {
   UseFilters,
   ParseIntPipe,
   Req,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
+import * as path from 'path';
 import * as fs from 'fs';
 import * as util from 'util';
 import { pipeline } from 'stream';
 const pump = util.promisify(pipeline);
 
 import { ApiConsumes, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { ApiSingleBaseResponse, SingleBase } from 'src/common/api.dto';
+import {
+  ApiListBaseResponse,
+  ApiSingleBaseResponse,
+  extractMultipartFields,
+  SingleBase,
+} from 'src/common/api.dto';
 import { HttpExceptionFilter } from 'src/common/http-exception.filter';
 
 import { CatsService } from './cats.service';
@@ -24,6 +32,7 @@ import { CreateCatDto } from './dto/create-cat.dto';
 import { UpdateCatDto } from './dto/update-cat.dto';
 import { UploadSingleFile } from './dto/upload.dto';
 import { Cat } from './entities/cat.entity';
+import { FastifyRequest } from 'fastify';
 
 @Controller('/cats')
 @ApiTags('cats')
@@ -39,11 +48,13 @@ export class CatsController {
   }
 
   @Get('/')
+  @ApiListBaseResponse(Cat)
   findAll() {
     return 'this api return all cat';
   }
 
   @Get('/:id')
+  @ApiSingleBaseResponse(Cat)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.catsService.findOne(id);
   }
@@ -61,16 +72,26 @@ export class CatsController {
   @Post('/upload')
   @ApiConsumes('multipart/form-data')
   @ApiSingleBaseResponse(Cat)
-  async uploadFileAndPassValidation(@Req() req) {
-    const body = await req.file();
-    await pump(body.file, fs.createWriteStream(body.filename));
-    console.log({ body: body.fields.target.value });
-    return new SingleBase(new Cat());
+  @HttpCode(HttpStatus.OK)
+  async uploadFileAndPassValidation(
+    @Req() req: FastifyRequest,
+    @Body() body: UploadSingleFile,
+  ) {
+    const file = await req.file();
+    await pump(
+      file.file,
+      fs.createWriteStream(path.join(process.cwd(), file.filename)),
+    );
+    body = extractMultipartFields<UploadSingleFile>(file.fields);
+    return new SingleBase<Cat>(
+      new Cat({
+        age: body.age,
+      }),
+    );
   }
 
   @ApiOkResponse({ type: Cat })
-  @Get('/entity/schema')
   entity() {
-    return new Cat();
+    return null;
   }
 }
